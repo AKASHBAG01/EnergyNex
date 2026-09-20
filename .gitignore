@@ -1,0 +1,16 @@
+# Firebase credentials
+energy-backend/firebase-key.json
+
+# Node modules
+energy-backend/node_modules/
+
+# Environment files
+.env
+energy-backend/.env
+
+# Logs
+energy-backend/nohup.out
+npm-debug.log*
+
+# Frontend Firebase configuration
+energy-frontend/firebase-config.js

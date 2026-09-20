@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>EnergyNex</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#050d1a">
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-glow glow-1"></div>
+<div class="bg-glow glow-2"></div>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon"><i class="fa fa-bolt"></i></div>
+    <div class="brand-text">
+      <span class="brand-title">ENERGYNEX</span>
+      <span class="brand-sub">SMART METER</span>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <a class="nav-item active" data-section="dashboard"><i class="fa fa-chart-line"></i><span>Dashboard</span></a>
+    <a class="nav-item" data-section="livedata"><i class="fa fa-bolt"></i><span>Live Data</span></a>
+    <a class="nav-item" data-section="billing"><i class="fa fa-file-invoice"></i><span>Billing</span></a>
+    <a class="nav-item" data-section="alerts"><i class="fa fa-triangle-exclamation"></i><span>Alerts</span></a>
+    <a class="nav-item" data-section="security"><i class="fa fa-shield-halved"></i><span>Security</span></a>
+  </nav>
+  <div class="sidebar-status">
+    <div class="conn-indicator">
+      <span class="conn-dot"></span>
+      <span class="conn-label">CONNECTING...</span>
+    </div>
+  </div>
+</aside>
+
+<button class="hamburger" id="hamburger" aria-label="Open menu"><i class="fa fa-bars"></i></button>
+
+<main class="main">
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <h1 class="page-title" id="pageTitle">⚡ Dashboard</h1>
+      <div class="live-badge" id="liveBadge"><span class="live-dot" id="liveDot"></span> <span id="liveText">CONNECTING</span></div>
+    </div>
+    <div class="topbar-right">
+      <div class="time-display" id="timeDisplay"></div>
+    </div>
+  </header>
+
+  <!-- ===================== PAGE: DASHBOARD ===================== -->
+  <section class="page active" id="page-dashboard">
+    <section class="cards-grid">
+      <div class="metric-card">
+        <div class="card-icon-wrap voltage-icon"><i class="fa fa-plug"></i></div>
+        <div class="card-content">
+          <span class="card-label">Voltage</span>
+          <span class="card-value" id="voltage">—</span>
+          <span class="card-unit">Volts</span>
+        </div>
+        <div class="card-bar"><div class="card-bar-fill voltage-bar" id="voltageBar" style="width:0%"></div></div>
+        <div class="card-sparkline"><canvas id="sparkV" width="80" height="28"></canvas></div>
+      </div>
+      <div class="metric-card">
+        <div class="card-icon-wrap current-icon"><i class="fa fa-wave-square"></i></div>
+        <div class="card-content">
+          <span class="card-label">Current</span>
+          <span class="card-value" id="current">—</span>
+          <span class="card-unit">Amperes</span>
+        </div>
+        <div class="card-bar"><div class="card-bar-fill current-bar" id="currentBar" style="width:0%"></div></div>
+        <div class="card-sparkline"><canvas id="sparkA" width="80" height="28"></canvas></div>
+      </div>
+      <div class="metric-card">
+        <div class="card-icon-wrap power-icon"><i class="fa fa-fire-flame-curved"></i></div>
+        <div class="card-content">
+          <span class="card-label">Power</span>
+          <span class="card-value" id="power">—</span>
+          <span class="card-unit">Watts</span>
+        </div>
+        <div class="card-bar"><div class="card-bar-fill power-bar" id="powerBar" style="width:0%"></div></div>
+        <div class="card-sparkline"><canvas id="sparkW" width="80" height="28"></canvas></div>
+      </div>
+      <div class="metric-card">
+        <div class="card-icon-wrap energy-icon"><i class="fa fa-battery-three-quarters"></i></div>
+        <div class="card-content">
+          <span class="card-label">Energy</span>
+          <span class="card-value" id="energy">—</span>
+          <span class="card-unit">kWh</span>
+        </div>
+        <div class="card-bar"><div class="card-bar-fill energy-bar" id="energyBar" style="width:0%"></div></div>
+        <div class="card-sparkline"><canvas id="sparkE" width="80" height="28"></canvas></div>
+      </div>
+      <div class="metric-card">
+        <div class="card-icon-wrap temp-icon"><i class="fa fa-temperature-high"></i></div>
+        <div class="card-content">
+          <span class="card-label">Temperature</span>
+          <span class="card-value" id="temp">—</span>
+          <span class="card-unit">°Celsius</span>
+        </div>
+        <div class="card-bar"><div class="card-bar-fill temp-bar" id="tempBar" style="width:0%"></div></div>
+        <div class="card-sparkline"><canvas id="sparkT" width="80" height="28"></canvas></div>
+      </div>
+      <div class="metric-card bill-card">
+        <div class="card-icon-wrap bill-icon"><i class="fa fa-indian-rupee-sign"></i></div>
+        <div class="card-content">
+          <span class="card-label">Current Bill</span>
+          <span class="card-value" id="bill">—</span>
+          <span class="card-unit">Rupees</span>
+        </div>
+        <div class="bill-trend"><i class="fa fa-arrow-trend-up"></i> This cycle</div>
+      </div>
+    </section>
+
+    <section class="bottom-grid">
+      <div class="chart-panel">
+        <div class="panel-header">
+          <div class="panel-title"><i class="fa fa-chart-area"></i><span>Live Graph</span></div>
+          <div class="chart-legend"><span class="legend-dot"></span><span id="chartLegendLabel">Energy · kWh Real-time</span></div>
+        </div>
+        <div class="chart-metric-tabs">
+          <button class="chart-metric-btn active" data-metric="energy"><i class="fa fa-battery-three-quarters"></i> Energy</button>
+          <button class="chart-metric-btn" data-metric="power"><i class="fa fa-fire-flame-curved"></i> Power</button>
+          <button class="chart-metric-btn" data-metric="voltage"><i class="fa fa-plug"></i> Voltage</button>
+          <button class="chart-metric-btn" data-metric="current"><i class="fa fa-wave-square"></i> Current</button>
+          <button class="chart-metric-btn" data-metric="temp"><i class="fa fa-temperature-high"></i> Temp</button>
+        </div>
+        <div class="chart-wrap"><canvas id="energyChart"></canvas></div>
+      </div>
+
+      <div class="status-panel">
+        <div class="panel-header">
+          <div class="panel-title"><i class="fa fa-shield-halved"></i><span>System Status</span></div>
+        </div>
+        <div class="status-items">
+          <div class="status-row">
+            <div class="status-icon theft-icon"><i class="fa fa-user-secret"></i></div>
+            <div class="status-info">
+              <span class="status-name">Theft Detection</span>
+              <span class="status-val" id="theft">—</span>
+            </div>
+          </div>
+          <div class="status-row">
+            <div class="status-icon overload-icon"><i class="fa fa-bolt"></i></div>
+            <div class="status-info">
+              <span class="status-name">Overload Status</span>
+              <span class="status-val" id="overload">—</span>
+            </div>
+          </div>
+          <div class="status-row">
+            <div class="status-icon wire-icon"><i class="fa fa-plug-circle-check"></i></div>
+            <div class="status-info">
+              <span class="status-name">Wire Integrity</span>
+              <span class="status-val" id="wire">—</span>
+            </div>
+          </div>
+        </div>
+        <div class="relay-section">
+          <div class="relay-header">Relay Control</div>
+          <button class="relay-btn" id="relayBtn">
+            <span class="relay-indicator"></span>
+            <span id="relayText">RELAY OFF</span>
+          </button>
+        </div>
+        <div class="control-section">
+          <label class="control-label" for="maxLoadInput"><i class="fa fa-sliders"></i> Max Load Limit</label>
+          <div class="input-row">
+            <input type="number" id="maxLoadInput" placeholder="Loading..." inputmode="numeric">
+            <button class="ctrl-btn save-btn" id="saveLoadBtn"><i class="fa fa-floppy-disk"></i> Save</button>
+          </div>
+        </div>
+        <button class="ctrl-btn reset-btn full-width" id="resetBillBtn"><i class="fa fa-rotate-left"></i> Reset Billing Cycle</button>
+      </div>
+    </section>
+  </section>
+
+  <!-- ===================== PAGE: LIVE DATA ===================== -->
+  <section class="page" id="page-livedata">
+    <div class="page-inner">
+      <div class="page-section-title"><i class="fa fa-bolt"></i> Live Sensor Data</div>
+      <div class="live-data-grid">
+        <div class="live-data-card">
+          <div class="ldc-header voltage-icon"><i class="fa fa-plug"></i> Voltage</div>
+          <div class="ldc-value" id="ld-voltage">—</div>
+          <div class="ldc-unit">Volts (V)</div>
+          <div class="ldc-bar"><div class="card-bar-fill voltage-bar" id="ld-voltageBar" style="width:0%"></div></div>
+          <div class="ldc-meta">Range: 0 – 260V</div>
+        </div>
+        <div class="live-data-card">
+          <div class="ldc-header current-icon"><i class="fa fa-wave-square"></i> Current</div>
+          <div class="ldc-value" id="ld-current">—</div>
+          <div class="ldc-unit">Amperes (A)</div>
+          <div class="ldc-bar"><div class="card-bar-fill current-bar" id="ld-currentBar" style="width:0%"></div></div>
+          <div class="ldc-meta">Range: 0 – 20A</div>
+        </div>
+        <div class="live-data-card">
+          <div class="ldc-header power-icon"><i class="fa fa-fire-flame-curved"></i> Power</div>
+          <div class="ldc-value" id="ld-power">—</div>
+          <div class="ldc-unit">Watts (W)</div>
+          <div class="ldc-bar"><div class="card-bar-fill power-bar" id="ld-powerBar" style="width:0%"></div></div>
+          <div class="ldc-meta">Range: 0 – 5000W</div>
+        </div>
+        <div class="live-data-card">
+          <div class="ldc-header energy-icon"><i class="fa fa-battery-three-quarters"></i> Energy</div>
+          <div class="ldc-value" id="ld-energy">—</div>
+          <div class="ldc-unit">Kilowatt-Hour (kWh)</div>
+          <div class="ldc-bar"><div class="card-bar-fill energy-bar" id="ld-energyBar" style="width:0%"></div></div>
+          <div class="ldc-meta">Range: 0 – 100 kWh</div>
+        </div>
+        <div class="live-data-card">
+          <div class="ldc-header temp-icon"><i class="fa fa-temperature-high"></i> Temperature</div>
+          <div class="ldc-value" id="ld-temp">—</div>
+          <div class="ldc-unit">Degrees Celsius (°C)</div>
+          <div class="ldc-bar"><div class="card-bar-fill temp-bar" id="ld-tempBar" style="width:0%"></div></div>
+          <div class="ldc-meta">Range: 0 – 80°C</div>
+        </div>
+        <div class="live-data-card bill-card">
+          <div class="ldc-header bill-icon"><i class="fa fa-indian-rupee-sign"></i> Current Bill</div>
+          <div class="ldc-value amber-val" id="ld-bill">—</div>
+          <div class="ldc-unit">Indian Rupees (₹)</div>
+          <div class="ldc-meta">Resets each billing cycle</div>
+        </div>
+      </div>
+      <div class="last-update-row">
+        <i class="fa fa-clock"></i> Last updated: <span id="lastUpdateLabel">—</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PAGE: BILLING ===================== -->
+  <section class="page" id="page-billing">
+    <div class="page-inner">
+      <div class="page-section-title"><i class="fa fa-file-invoice"></i> Billing Details</div>
+
+      <div class="billing-hero">
+        <div class="billing-hero-card">
+          <div class="bh-label">Current Cycle Bill</div>
+          <div class="bh-value" id="bill-hero">—</div>
+          <div class="bh-sub">Based on energy consumed this cycle</div>
+        </div>
+        <div class="billing-hero-card">
+          <div class="bh-label">Energy Consumed</div>
+          <div class="bh-value cyan-val" id="bill-energy">—</div>
+          <div class="bh-sub">Kilowatt-Hours (kWh)</div>
+        </div>
+        <div class="billing-hero-card">
+          <div class="bh-label">Current Power Draw</div>
+          <div class="bh-value amber-val" id="bill-power">—</div>
+          <div class="bh-sub">Watts (W) live reading</div>
+        </div>
+      </div>
+
+      <div class="billing-info-grid">
+        <div class="billing-info-card">
+          <div class="bi-title"><i class="fa fa-calculator"></i> How Your Bill is Calculated</div>
+          <div class="bi-body">
+            <div class="bi-row"><span class="bi-key">Rate (India avg)</span><span class="bi-val">₹6 – ₹9 per kWh</span></div>
+            <div class="bi-row"><span class="bi-key">Formula</span><span class="bi-val">Energy (kWh) × Rate</span></div>
+            <div class="bi-row"><span class="bi-key">Power Formula</span><span class="bi-val">Voltage × Current</span></div>
+            <div class="bi-row"><span class="bi-key">Energy Formula</span><span class="bi-val">Power × Time (hours)</span></div>
+            <div class="bi-row"><span class="bi-key">1 Unit =</span><span class="bi-val">1 kWh = 1000W for 1hr</span></div>
+          </div>
+        </div>
+
+        <div class="billing-info-card">
+          <div class="bi-title"><i class="fa fa-lightbulb"></i> Appliance Reference</div>
+          <div class="bi-body">
+            <div class="bi-row"><span class="bi-key">LED Bulb (9W)</span><span class="bi-val">~0.009 kWh/hr</span></div>
+            <div class="bi-row"><span class="bi-key">Fan (75W)</span><span class="bi-val">~0.075 kWh/hr</span></div>
+            <div class="bi-row"><span class="bi-key">TV (100W)</span><span class="bi-val">~0.1 kWh/hr</span></div>
+            <div class="bi-row"><span class="bi-key">AC (1.5 ton)</span><span class="bi-val">~1.5 kWh/hr</span></div>
+            <div class="bi-row"><span class="bi-key">Geyser (2000W)</span><span class="bi-val">~2.0 kWh/hr</span></div>
+          </div>
+        </div>
+
+        <div class="billing-info-card">
+          <div class="bi-title"><i class="fa fa-chart-pie"></i> Live Cost Estimates</div>
+          <div class="bi-body">
+            <div class="bi-row"><span class="bi-key">Cost per Hour</span><span class="bi-val amber-val" id="cost-per-hour">—</span></div>
+            <div class="bi-row"><span class="bi-key">Cost per Day (est.)</span><span class="bi-val amber-val" id="cost-per-day">—</span></div>
+            <div class="bi-row"><span class="bi-key">Cost per Month (est.)</span><span class="bi-val amber-val" id="cost-per-month">—</span></div>
+            <div class="bi-row"><span class="bi-key">Units per Hour</span><span class="bi-val cyan-val" id="units-per-hour">—</span></div>
+            <div class="bi-row"><span class="bi-key">Max Load Limit</span><span class="bi-val" id="bill-maxload">—</span></div>
+          </div>
+        </div>
+
+        <div class="billing-info-card">
+          <div class="bi-title"><i class="fa fa-rotate-left"></i> Billing Control</div>
+          <div class="bi-body">
+            <p class="bi-desc">Reset the billing cycle to start tracking energy and cost from zero. This action cannot be undone.</p>
+            <button class="ctrl-btn reset-btn full-width mt-12" id="resetBillBtn2"><i class="fa fa-rotate-left"></i> Reset Billing Cycle</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PAGE: ALERTS ===================== -->
+  <section class="page" id="page-alerts">
+    <div class="page-inner">
+      <div class="page-section-title"><i class="fa fa-bell"></i> Alerts & Notifications</div>
+
+      <div class="alerts-status-row">
+        <div class="alert-status-card" id="as-theft">
+          <div class="asc-icon"><i class="fa fa-user-secret"></i></div>
+          <div class="asc-info">
+            <div class="asc-name">Theft Detection</div>
+            <div class="asc-val" id="al-theft">—</div>
+          </div>
+        </div>
+        <div class="alert-status-card" id="as-overload">
+          <div class="asc-icon"><i class="fa fa-bolt"></i></div>
+          <div class="asc-info">
+            <div class="asc-name">Overload Status</div>
+            <div class="asc-val" id="al-overload">—</div>
+          </div>
+        </div>
+        <div class="alert-status-card" id="as-wire">
+          <div class="asc-icon"><i class="fa fa-plug-circle-check"></i></div>
+          <div class="asc-info">
+            <div class="asc-name">Wire Integrity</div>
+            <div class="asc-val" id="al-wire">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert-log-panel">
+        <div class="panel-header">
+          <div class="panel-title"><i class="fa fa-list"></i><span>Alert History (This Session)</span></div>
+          <button class="ctrl-btn save-btn small-btn" id="clearAlertsBtn"><i class="fa fa-trash"></i> Clear</button>
+        </div>
+        <div class="alert-log" id="alertLog">
+          <div class="alert-empty">No alerts triggered yet.</div>
+        </div>
+      </div>
+
+      <div class="alert-info-card">
+        <div class="bi-title"><i class="fa fa-circle-info"></i> About Alerts</div>
+        <div class="bi-body">
+          <div class="bi-row"><span class="bi-key">Theft Detection</span><span class="bi-val">Triggered when unexpected current flow is detected on the line with no active load.</span></div>
+          <div class="bi-row"><span class="bi-key">Overload</span><span class="bi-val">Triggered when power draw exceeds your configured Max Load Limit.</span></div>
+          <div class="bi-row"><span class="bi-key">Wire Tamper</span><span class="bi-val">Triggered when a physical disturbance or bypass attempt is detected on the meter wiring.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PAGE: SECURITY ===================== -->
+  <section class="page" id="page-security">
+    <div class="page-inner">
+      <div class="page-section-title"><i class="fa fa-shield-halved"></i> Security & System Status</div>
+
+      <div class="security-grid">
+        <div class="security-card" id="sec-theft">
+          <div class="sec-icon-wrap"><i class="fa fa-user-secret"></i></div>
+          <div class="sec-name">Theft Detection</div>
+          <div class="sec-val" id="sec-theft-val">—</div>
+          <div class="sec-desc">Monitors for unauthorised energy tapping on the line.</div>
+        </div>
+        <div class="security-card" id="sec-overload">
+          <div class="sec-icon-wrap"><i class="fa fa-bolt"></i></div>
+          <div class="sec-name">Overload Protection</div>
+          <div class="sec-val" id="sec-overload-val">—</div>
+          <div class="sec-desc">Detects power draw beyond the configured max load limit.</div>
+        </div>
+        <div class="security-card" id="sec-wire">
+          <div class="sec-icon-wrap"><i class="fa fa-plug-circle-check"></i></div>
+          <div class="sec-name">Wire Integrity</div>
+          <div class="sec-val" id="sec-wire-val">—</div>
+          <div class="sec-desc">Checks for physical tampering or bypass of meter wiring.</div>
+        </div>
+      </div>
+
+      <div class="bottom-grid" style="margin-top:0; padding-top:0;">
+        <div class="status-panel">
+          <div class="panel-header">
+            <div class="panel-title"><i class="fa fa-toggle-on"></i><span>Relay Control</span></div>
+          </div>
+          <div class="relay-section" style="margin-bottom:0;">
+            <div class="relay-header">Main Power Relay</div>
+            <button class="relay-btn" id="relayBtn2">
+              <span class="relay-indicator" id="relayIndicator2"></span>
+              <span id="relayText2">RELAY OFF</span>
+            </button>
+          </div>
+          <div class="control-section" style="margin-top:14px;">
+            <label class="control-label" for="maxLoadInput2"><i class="fa fa-sliders"></i> Max Load Limit</label>
+            <div class="input-row">
+              <input type="number" id="maxLoadInput2" placeholder="Loading..." inputmode="numeric">
+              <button class="ctrl-btn save-btn" id="saveLoadBtn2"><i class="fa fa-floppy-disk"></i> Save</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="status-panel">
+          <div class="panel-header">
+            <div class="panel-title"><i class="fa fa-circle-info"></i><span>Security Info</span></div>
+          </div>
+          <div class="bi-body" style="padding-top:4px;">
+            <div class="bi-row"><span class="bi-key">Relay State</span><span class="bi-val" id="sec-relay-state">—</span></div>
+            <div class="bi-row"><span class="bi-key">Max Load Set</span><span class="bi-val" id="sec-maxload">—</span></div>
+            <div class="bi-row"><span class="bi-key">Last Status Update</span><span class="bi-val" id="sec-last-update">—</span></div>
+            <div class="bi-row"><span class="bi-key">Connection</span><span class="bi-val" id="sec-conn">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav" id="bottomNav">
+  <a class="bottom-nav-item active" data-section="dashboard"><i class="fa fa-chart-line"></i><span>Dashboard</span></a>
+  <a class="bottom-nav-item" data-section="livedata"><i class="fa fa-bolt"></i><span>Live</span></a>
+  <a class="bottom-nav-item" data-section="billing"><i class="fa fa-file-invoice"></i><span>Billing</span></a>
+  <a class="bottom-nav-item" data-section="alerts"><i class="fa fa-bell"></i><span>Alerts</span></a>
+  <a class="bottom-nav-item" data-section="security"><i class="fa fa-shield-halved"></i><span>Security</span></a>
+</nav>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ALERT POPUP -->
+<div class="alert-popup" id="alertPopup">
+  <div class="ap-icon"><i class="fa fa-triangle-exclamation"></i></div>
+  <div class="ap-body">
+    <div class="ap-title" id="apTitle">Alert</div>
+    <div class="ap-msg" id="apMsg">—</div>
+  </div>
+  <button class="ap-close" id="apClose"><i class="fa fa-xmark"></i></button>
+</div>
+
+<script type="module" src="app.js"></script>
+<script>
+  /* ---- Clock ---- */
+  function updateTime() {
+    document.getElementById('timeDisplay').textContent =
+      new Date().toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  }
+  setInterval(updateTime, 1000); updateTime();
+
+  /* ---- Page navigation ---- */
+  const pageTitles = {
+    dashboard: '⚡ Dashboard',
+    livedata:  '⚡ Live Data',
+    billing:   '⚡ Billing',
+    alerts:    '⚡ Alerts',
+    security:  '⚡ Security'
+  };
+
+  window.navigateTo = function(section) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const pg = document.getElementById('page-' + section);
+    if (pg) pg.classList.add('active');
+
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.section === section));
+    document.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.toggle('active', b.dataset.section === section));
+
+    document.getElementById('pageTitle').textContent = pageTitles[section] || '⚡ Dashboard';
+    closeSidebar();
+  };
+
+  /* ---- Sidebar ---- */
+  function openSidebar() {
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('sidebarOverlay').classList.add('visible');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('visible');
+    document.body.style.overflow = '';
+  }
+  document.getElementById('hamburger').addEventListener('click', openSidebar);
+  document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => navigateTo(item.dataset.section));
+  });
+  document.querySelectorAll('.bottom-nav-item').forEach(item => {
+    item.addEventListener('click', () => navigateTo(item.dataset.section));
+  });
+
+  /* ---- Chart metric tabs ---- */
+  document.querySelectorAll('.chart-metric-btn').forEach(btn => {
+    btn.addEventListener('click', () => { if (typeof switchMetric === 'function') switchMetric(btn.dataset.metric); });
+  });
+
+  /* ---- Toast ---- */
+  window.showToast = function(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show ' + type;
+    setTimeout(() => { t.className = 'toast'; }, 3000);
+  };
+
+  /* ---- Alert popup close ---- */
+  document.getElementById('apClose').addEventListener('click', () => {
+    document.getElementById('alertPopup').classList.remove('show');
+  });
+
+  /* ---- Clear alert log ---- */
+  document.getElementById('clearAlertsBtn').addEventListener('click', () => {
+    document.getElementById('alertLog').innerHTML = '<div class="alert-empty">No alerts triggered yet.</div>';
+  });
+</script>
+</body>
+</html>
